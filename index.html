@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Wisdom - 日替わり名言</title>
+    
+    <!-- PWA設定 -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Wisdom">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .app-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .app-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+        
+        .app-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .date-display {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 24px;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #555;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .quote-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .quote-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .quote-text-english {
+            font-size: 22px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+            position: relative;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+        
+        .quote-text-english::before {
+            content: '"';
+            font-size: 48px;
+            color: #667eea;
+            position: absolute;
+            left: -15px;
+            top: -10px;
+            font-family: serif;
+        }
+        
+        .quote-text-english::after {
+            content: '"';
+            font-size: 48px;
+            color: #667eea;
+            position: absolute;
+            right: -15px;
+            bottom: -30px;
+            font-family: serif;
+        }
+        
+        .quote-text-japanese {
+            font-size: 17px;
+            line-height: 1.5;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 400;
+            padding: 15px;
+            background: rgba(103, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .quote-author {
+            font-size: 16px;
+            color: #666;
+            font-style: italic;
+            margin-top: 15px;
+        }
+        
+        .loading {
+            display: none;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .footer {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .quote-container {
+                padding: 30px 20px;
+                margin: 0 10px 30px;
+            }
+            
+            .quote-text-japanese {
+                font-size: 16px;
+            }
+            
+            .quote-text-english {
+                font-size: 20px;
+            }
+            
+            .quote-text-english::before,
+            .quote-text-english::after {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1 class="app-title">Daily Wisdom</h1>
+        <p class="app-subtitle">Daily inspiration with Japanese translation</p>
+    </div>
+    
+    <div class="main-content">
+        <div class="date-display" id="dateDisplay"></div>
+        
+        <div class="quote-container" id="quoteContainer">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Loading today's wisdom...
+            </div>
+            <div class="quote-text-english" id="quoteTextEnglish"></div>
+            <div class="quote-text-japanese" id="quoteTextJapanese"></div>
+            <div class="quote-author" id="quoteAuthor"></div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn" onclick="generateNewQuote()">✨ New Quote</button>
+            <button class="btn" onclick="shareQuote()">📱 Share</button>
+            <button class="btn" onclick="saveQuote()">💾 Save</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 Daily Wisdom - Inspiring quotes with Japanese translation</p>
+    </div>
+
+    <script>
+        // PWA関連の機能
+        let deferredPrompt;
+        let isInstalled = false;
+
+        // Service Worker登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // PWAインストールプロンプト
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallButton();
+        });
+
+        // インストールボタン表示
+        function showInstallButton() {
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📱 Install App';
+            installBtn.className = 'btn install-btn';
+            installBtn.onclick = installApp;
+            
+            const buttonContainer = document.querySelector('.action-buttons');
+            buttonContainer.appendChild(installBtn);
+        }
+
+        // アプリインストール
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // プッシュ通知許可
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('Notification permission granted');
+                        scheduleNotification();
+                    }
+                });
+            }
+        }
+
+        // 通知スケジュール（毎日午前9時）
+        function scheduleNotification() {
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                // 実際のプッシュ通知は後で実装
+                console.log('Push notifications will be implemented');
+            }
+        }
+
+        // 名言のデータベース（英語＋日本語訳）
+        const quotes = [
+            {
+                english: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+                japanese: "成功は最終的なものではなく、失敗は致命的なものではない。大切なのは続ける勇気である。",
+                author: "Winston Churchill"
+            },
+            {
+                english: "Your time is limited, so don't waste it living someone else's life.",
+                japanese: "あなたの時間は限られている。だから他人の人生を生きることで時間を無駄にしてはいけない。",
+                author: "Steve Jobs"
+            },
+            {
+                english: "The future depends on what you do today.",
+                japanese: "未来は、今日何をするかにかかっている。",
+                author: "Mahatma Gandhi"
+            },
+            {
+                english: "A journey of a thousand miles begins with a single step.",
+                japanese: "千里の道も一歩から。小さな一歩が大きな変化を生み出す。",
+                author: "Lao Tzu"
+            },
+            {
+                english: "The only way to do great work is to love what you do.",
+                japanese: "偉大な仕事をする唯一の方法は、自分の仕事を愛することである。",
+                author: "Steve Jobs"
+            },
+            {
+                english: "Whether you think you can or you think you can't, you're right.",
+                japanese: "できると思うか、できないと思うか。それがあなたの運命を決める。",
+                author: "Henry Ford"
+            },
+            {
+                english: "Today is the first day of the rest of your life.",
+                japanese: "今日という日は、残りの人生の最初の日である。",
+                author: "Abbie Hoffman"
+            },
+            {
+                english: "All our dreams can come true, if we have the courage to pursue them.",
+                japanese: "夢を追い続ける勇気があれば、すべての夢は実現する。",
+                author: "Walt Disney"
+            },
+            {
+                english: "It is during our darkest moments that we must focus to see the light.",
+                japanese: "最も暗い瞬間にこそ、光を見つけることに集中しなければならない。",
+                author: "Aristotle"
+            },
+            {
+                english: "It is not the strongest of the species that survives, but the most adaptable to change.",
+                japanese: "生き残るのは最も強い種ではなく、変化に最も適応できる種である。",
+                author: "Charles Darwin"
+            },
+            {
+                english: "Life is 10% what happens to you and 90% how you react to it.",
+                japanese: "人生は10%の出来事と90%の対応の仕方で決まる。",
+                author: "Charles R. Swindoll"
+            },
+            {
+                english: "The best time to plant a tree was 20 years ago. The second best time is now.",
+                japanese: "木を植えるのに最適な時期は20年前だった。次に良い時期は今である。",
+                author: "Chinese Proverb"
+            },
+            {
+                english: "Don't put off until tomorrow what you can do today.",
+                japanese: "今日できることを明日に延ばしてはいけない。",
+                author: "Benjamin Franklin"
+            },
+            {
+                english: "Every man is the architect of his own fortune.",
+                japanese: "人は誰でも、自分の運命の建築家である。",
+                author: "Sallust"
+            },
+            {
+                english: "The road to success is always under construction.",
+                japanese: "成功への道は、常に建設中である。",
+                author: "Lily Tomlin"
+            }
+        ];
+
+        // 保存された名言を管理
+        let savedQuotes = [];
+
+        // 日付を表示
+        function updateDate() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            document.getElementById('dateDisplay').textContent = 
+                now.toLocaleDateString('ja-JP', options);
+        }
+
+        // 日替わりの名言を取得
+        function getDailyQuote() {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            return quotes[dayOfYear % quotes.length];
+        }
+
+        // 名言を表示
+        function displayQuote(quote) {
+            document.getElementById('quoteTextEnglish').textContent = quote.english;
+            document.getElementById('quoteTextJapanese').textContent = quote.japanese;
+            document.getElementById('quoteAuthor').textContent = `— ${quote.author}`;
+        }
+
+        // 新しい名言を生成
+        function generateNewQuote() {
+            const loading = document.getElementById('loading');
+            const quoteTextEnglish = document.getElementById('quoteTextEnglish');
+            const quoteTextJapanese = document.getElementById('quoteTextJapanese');
+            const quoteAuthor = document.getElementById('quoteAuthor');
+            
+            // ローディング表示
+            loading.style.display = 'block';
+            quoteTextEnglish.style.display = 'none';
+            quoteTextJapanese.style.display = 'none';
+            quoteAuthor.style.display = 'none';
+            
+            // 1.5秒後に新しい名言を表示（API呼び出しの模擬）
+            setTimeout(() => {
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                displayQuote(randomQuote);
+                
+                loading.style.display = 'none';
+                quoteTextEnglish.style.display = 'block';
+                quoteTextJapanese.style.display = 'block';
+                quoteAuthor.style.display = 'block';
+            }, 1500);
+        }
+
+        // 名言をシェア
+        function shareQuote() {
+            const quoteTextEnglish = document.getElementById('quoteTextEnglish').textContent;
+            const quoteTextJapanese = document.getElementById('quoteTextJapanese').textContent;
+            const quoteAuthor = document.getElementById('quoteAuthor').textContent;
+            const shareText = `"${quoteTextEnglish}"\n\n${quoteTextJapanese}\n\n${quoteAuthor}\n\n#DailyWisdom #Quotes #Inspiration`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Daily Wisdom',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // フォールバック：クリップボードにコピー
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Quote copied to clipboard!');
+                });
+            }
+        }
+
+        // 名言を保存
+        function saveQuote() {
+            const quoteTextEnglish = document.getElementById('quoteTextEnglish').textContent;
+            const quoteTextJapanese = document.getElementById('quoteTextJapanese').textContent;
+            const quoteAuthor = document.getElementById('quoteAuthor').textContent;
+            
+            const quote = {
+                english: quoteTextEnglish,
+                japanese: quoteTextJapanese,
+                author: quoteAuthor.replace('— ', ''),
+                date: new Date().toISOString()
+            };
+            
+            savedQuotes.push(quote);
+            alert('Quote saved successfully!');
+            
+            // 実際のアプリでは、ここでローカルストレージやサーバーに保存
+            console.log('保存された名言:', savedQuotes);
+        }
+
+        // アプリの初期化
+        function initApp() {
+            updateDate();
+            const dailyQuote = getDailyQuote();
+            displayQuote(dailyQuote);
+            
+            // PWA機能初期化
+            setTimeout(() => {
+                requestNotificationPermission();
+            }, 3000); // 3秒後に通知許可を求める
+        }
+
+        // ページロード時に初期化
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>
