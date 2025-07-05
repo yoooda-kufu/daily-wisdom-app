@@ -284,7 +284,6 @@
         <div class="action-buttons">
             <button class="btn" onclick="generateNewQuote()">✨ New Quote</button>
             <button class="btn" onclick="shareQuote()">📱 Share</button>
-            <button class="btn" onclick="saveQuote()">💾 Save</button>
         </div>
     </div>
     
@@ -440,9 +439,6 @@
             }
         ];
 
-        // 保存された名言を管理
-        let savedQuotes = [];
-
         // 日付を表示
         function updateDate() {
             const now = new Date();
@@ -514,26 +510,6 @@
                     alert('Quote copied to clipboard!');
                 });
             }
-        }
-
-        // 名言を保存
-        function saveQuote() {
-            const quoteTextEnglish = document.getElementById('quoteTextEnglish').textContent;
-            const quoteTextJapanese = document.getElementById('quoteTextJapanese').textContent;
-            const quoteAuthor = document.getElementById('quoteAuthor').textContent;
-            
-            const quote = {
-                english: quoteTextEnglish,
-                japanese: quoteTextJapanese,
-                author: quoteAuthor.replace('— ', ''),
-                date: new Date().toISOString()
-            };
-            
-            savedQuotes.push(quote);
-            alert('Quote saved successfully!');
-            
-            // 実際のアプリでは、ここでローカルストレージやサーバーに保存
-            console.log('保存された名言:', savedQuotes);
         }
 
         // アプリの初期化
