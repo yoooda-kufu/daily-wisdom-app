@@ -5,6 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Wisdom - 日替わり名言</title>
     
+    <meta name="color-scheme" content="light">
+    <style>
+        /* ダークモード強制無効化 */
+        :root {
+            color-scheme: light !important;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: #333 !important;
+        }
+        .quote-text-english {
+            color: #333 !important;
+        }
+        .quote-text-japanese {
+            color: #666 !important;
+        }
+        .quote-author {
+            color: #666 !important;
+        }
+        .quote-container {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #333 !important;
+        }
+        .btn {
+            color: white !important;
+        }
+        
+        /* ダークモード時も強制的にライトモード */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: #333 !important;
+            }
+            .quote-container {
+                background: rgba(255, 255, 255, 0.95) !important;
+                color: #333 !important;
+            }
+            .quote-text-english,
+            .quote-text-japanese,
+            .quote-author {
+                color: #333 !important;
+            }
+        }
+    </style>
+    
     <!-- PWA設定 -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#667eea">
